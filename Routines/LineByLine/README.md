@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------------------------------------------------------------------------
-## Instructions to use the LineByLine Macro: 
+## LineByLine Macro Instructions: 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 1. From the main worksheet click File -> Options -> Customize Ribbon -> Main Tabs 
 then click the "Developer" checkbox. Click "Ok".
