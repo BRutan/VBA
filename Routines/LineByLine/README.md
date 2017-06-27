@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------------------------------------------------------------------------
 ## Instructions to use the LineByLine Macro: 
 ------------------------------------------------------------------------------------------------------------------------------------------------
-1. (If you haven't already:) From the main worksheet click File -> Options -> Customize Ribbon -> Main Tabs 
+1. From the main worksheet click File -> Options -> Customize Ribbon -> Main Tabs 
 then click the "Developer" checkbox. Click "Ok".
 2. Save the Workbook as a "Excel Macro-Enabled Workbook" (.xlsm).
 3. Insert a "Group #" column to the right of the CPT column in the pricing file. Run a VLookup on CPT to get the Group # in the CPT-Group # rollup. (TBD)
