@@ -9,5 +9,5 @@ then click the "Developer" checkbox. Click "Ok".
 5. Go to "File" -> "Import File" and select RangeDifference.bas, then click "Open".
 6. Go to "File" -> "Import File" and select RangeDifference.frx, then click "Open".
 7. Go to the Developer tab, click Insert (the toolbox picture) and select a Button.
-8. Draw the button anywhere on the worksheet. Once drawn, you'll be asked to associate the button with a macro. Choose "YourWorkbookName.xlsb!Start_LineByLineForm".
+8. Draw the button anywhere on the worksheet. Once drawn, you'll be asked to associate the button with a macro. Choose "YourWorkbookName.xlsb!Start_RangeDifferenceForm".
 9. Once you click the button the RangeDifference userform will pop up. Enter the appropriate ranges into the input boxes then press the "Run" button. See RangeDifference macro content in VBA workspace for further details. 
