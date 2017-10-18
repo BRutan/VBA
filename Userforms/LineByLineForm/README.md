@@ -9,3 +9,9 @@ For example, a double amputation procedure with higher RVUs should cost more tha
 Before implementing this macro, analysts at our firm would perform this grueling process manually on 100K+ record sets; this macro
 automatically performs this process in seconds.
 
+
+--------------------------------------------------------------------------------------------------------------------------------
+##LineByLineForm Import Instructions:
+--------------------------------------------------------------------------------------------------------------------------------
+
+1. Import into 
