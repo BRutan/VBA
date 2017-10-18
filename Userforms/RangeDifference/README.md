@@ -1,5 +1,10 @@
 ------------------------------------------------------------------------------------------------------------------------------------------------
-## RangeDifference Macro Instructions: 
+## RangeDifference Macro Description: 
+------------------------------------------------------------------------------------------------------------------------------------------------
+Macro calculates the "difference" (set difference) between two ranges (A and B). The difference is all strings in set A that are NOT in set B (set notation: A \ B). 
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+## RangeDifference Macro Import Instructions: 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 1. From the main worksheet click File -> Options -> Customize Ribbon -> Main Tabs 
 then click the "Developer" checkbox. Click "Ok".
