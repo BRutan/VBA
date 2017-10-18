@@ -111,23 +111,5 @@ Private Sub CancelButton_Click()
     Me.Hide
     Unload Me
 End Sub
-Public Sub UndoLineByLine()
-    On Error GoTo Message
-    
-    If originalSheet Is Nothing Then
-        Exit Sub
-    Else
-        originalSheet.Activate
-        ' Replace contents of mainRange with original contents:
-        Dim i, j As Integer
-        For i = 1 To originalRange.Rows.count
-            For j = 1 To originalRange.Columns.count
-                mainRange.Cells(i, j).value = originalRange.Cells(i, j).value
-            Next j
-        Next i
-    End If
-
-Message:
-    MsgBox "Error: Can't Undo."
 
 End Sub
