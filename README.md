@@ -4,6 +4,7 @@
 * Example VBA code from previous coursework and employment. 
 ----------------------------------------------------------------------------------------------------------------------------------
 * Folders:
+-Access: Scripts automating Microsoft Access tasks. 
 
 -Classes: Classes exhibiting common data-structure functionality.
 
@@ -11,4 +12,4 @@
 
 ----------------------------------------------------------------------------------------------------------------------------------
 
-Each file contained herein provides further details.
+Each folder contained herein provides further details.
