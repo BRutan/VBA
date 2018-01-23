@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------------------------------------------------------
-##LineByLineForm Userform/Macro Description:
+## LineByLineForm Userform/Macro Description:
 --------------------------------------------------------------------------------------------------------------------------------
 
 Userform wraps macro that partially automates time consuming process of determining if grouped charges have consistent prices, i.e.
@@ -11,7 +11,7 @@ automatically performs this process in seconds.
 
 
 --------------------------------------------------------------------------------------------------------------------------------
-##LineByLineForm Import Instructions:
+## LineByLineForm Import Instructions:
 --------------------------------------------------------------------------------------------------------------------------------
 
 1. Import into 
