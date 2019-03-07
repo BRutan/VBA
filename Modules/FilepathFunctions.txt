@@ -1,0 +1,110 @@
+Public Function HandleDuplicates(filePath As String) As String
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Description:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' If a filepath already exists then append a "_#" between the file name and the extension.
+
+'' If a filepath was not passed then return the input:
+filePath = Trim(filePath)
+If InStr(1, filePath, ".") = 0 Then
+    HandleDuplicates = filePath
+    Exit Function
+End If
+
+Dim fso As Object: Set fso = CreateObject("Scripting.FileSystemObject")
+Dim extension As String: extension = GetExtension(filePath)
+Dim pathWithoutExtension As String: pathWithoutExtension = GetFileTitle(filePath)
+
+Dim currCount As Integer: currCount = 2
+
+'' Continue to append until no matching file exists:
+Do While fso.FileExists(filePath) = True
+    filePath = pathWithoutExtension & "_" & CStr(currCount) & extension
+    currCount = currCount + 1
+Loop
+
+HandleDuplicates = filePath
+
+End Function
+
+Public Function GetExtension(filePath As String) As String
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Description:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Pull the extension (period included) from the passed file path. If not a file path then just return the input.
+
+filePath = Trim(filePath)
+If InStr(1, filePath, ".") = 0 Then
+    GetExtension = filePath
+    Exit Function
+End If
+
+GetExtension = Mid(filePath, InStrRev(filePath, "."), Len(filePath))
+
+End Function
+
+Public Function GetFileTitle(filePath As String) As String
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Description:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Pull all characters before extension from the passed file path. If not a file path then just return the input.
+
+filePath = Trim(filePath)
+If InStr(1, filePath, ".") = 0 Then
+    GetFileTitle = filePath
+    Exit Function
+End If
+
+GetFileTitle = Mid(filePath, 1, InStr(1, filePath, GetExtension(filePath)) - 1)
+
+End Function
+Public Function GetEnclosingFolder(path As String) As String
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Description:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Return the enclosing folder for the given file path, or the folder path if a folder was passed.
+
+path = AppendHyphenIfNecessary(path)
+path = Mid(path, 1, InStrRev(path, "/"))
+
+GetEnclosingFolder = path
+
+End Function
+
+Public Function AppendHyphenIfNecessary(folderPath As String) As String
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Description:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Append an enclosing hyphen to passed folder path if missing to prevent concatenating issues. If a filepath or non-path was passed then return the input.
+
+folderPath = ReplaceBackWithForwardSlashes(folderPath)
+If InStr(1, folderPath, ".") <> 0 Or InStr(1, folderPath, "/") = 0 Then
+    AppendHyphenIfNecessary = folderPath
+    Exit Function
+End If
+
+AppendHyphenIfNecessary = folderPath & IIf(Mid(folderPath, Len(folderPath), 1) <> "/", "/", "")
+
+End Function
+
+Public Function ReplaceISIS(path As String) As String
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Description:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Replace "\\isis\common\Operations\Oberon\" with "K:\Operations\Oberon\".
+
+ReplaceISIS = Replace(path, "\\isis\common\Operations\Oberon\", "K:\Operations\Oberon\")
+ReplaceISIS = Replace(path, "//isis/common/Operations/Oberon/", "K:/Operations/Oberon/")
+
+End Function
+
+Public Function ReplaceBackWithForwardSlashes(path As String) As String
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Description:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Replace all backslashes with forward slashes.
+
+path = Replace(path, "\", "/")
+ReplaceBackWithForwardSlashes = path
+
+End Function

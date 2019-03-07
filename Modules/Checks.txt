@@ -1,0 +1,216 @@
+Option Explicit
+Function CheckSheets(ParamArray sheetNames() As Variant) As String
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Description:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Function checks that each passed sheet was present in this workbook. Returns error message indicating missing
+'' sheets. Will be blank if all sheets were present.
+
+Dim sheet As Variant
+Dim errorMessage As String
+Dim hasError As Boolean
+
+On Error Resume Next
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Ensure that each element of the parameter array has expected type:
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+For Each sheet In sheetNames
+    If TypeName(sheet) <> "String" Then
+        hasError = True
+    End If
+Next sheet
+
+If hasError = True Then
+    '' Raise exception. 13 indicates type mismatch.
+    Err.Raise 13, "CheckSheets", "Each element of parameter array must be a sheet name string."
+End If
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Check that each sheet exists:
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Dim tempWS As Worksheet
+For Each sheet In sheetNames
+    Set tempWS = ThisWorkbook.Worksheets(CStr(sheet))
+    If Err.Number <> 0 Then
+        errorMessage = errorMessage & IIf(hasError = False, "The following sheets are missing from this workbook:" & vbCr, ", ")
+        errorMessage = errorMessage & CStr(sheet)
+        hasError = True
+        Err.Clear
+    End If
+Next sheet
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Return error message. Will be blank if each sheet was present:
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+CheckSheets = errorMessage
+
+End Function
+
+Function CheckRangesAndFillValues(ParamArray elements() As Variant) As String
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Description:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Function attempts to fill each passed dictionary (with mapping { "Name" -> {"Named_Range", "Value"} }), and returns
+'' error message indicating which named ranges were missing. Will throw exception if the ParamArray does not contain
+'' dictionaries with one of the following expected signatures:
+'' 1. Dict{ "Name" -> ("Named_Range", "Value") }
+'' 2. Tuple( "SheetName", Dict{ "Name" -> ("Named_Range", "Value") })
+
+'' Check that each element of parameter variant array is a dictionary with correct format or .
+Dim arrElem, dictObj, element, key, tempArr As Variant
+Dim index As Long
+Dim errorMessage As String: errorMessage = ""
+Dim hasError As Boolean
+
+On Error Resume Next
+
+For Each element In elements
+    If Not (TypeName(element) = "Dictionary" Or TypeName(element) = "Variant()") Then
+        ' Element of the parameter array must either be a variant or a dictionary:
+        hasError = True
+    ElseIf TypeName(element) = "Dictionary" Then
+        '' Set the named range dict to check as the element itself:
+        Set dictObj = element
+    ElseIf TypeName(element) = "Variant()" And (UBound(element) - LBound(element)) <> 1 Or (TypeName(element(0)) <> "String" Or TypeName(element(1)) <> "Dictionary") Then
+        '' If element is array, the first value of the array must be string indicating sheet name, second must be the named range
+        '' dictionary.
+        hasError = True
+    Else
+        '' Set the named range dict to check as the second element of array:
+        Set dictObj = element(1)
+    End If
+    
+    '' Check the validity of the dictionary object (exactly one is required for each element):
+    If hasError = False Then
+        '' Check that each key and value of dictionary is a string:
+        For Each key In dictObj.Keys()
+            If TypeName(key) <> "String" Then
+                ' Key of dictionary must be a string:
+                hasError = True
+            ElseIf TypeName(dictObj(key)) <> "Variant()" Then
+                ' Value mapped to key must be a variant:
+                hasError = True
+            ElseIf UBound(dictObj(key)) - LBound(dictObj(key)) <> 1 Then
+                ' Expecting exactly two elements in mapped variant:
+                hasError = True
+            Else
+                ' Ensure that each element of the mapped array is a string:
+                For index = LBound(dictObj(key)) To UBound(dictObj(key))
+                    If TypeName(dictObj(key)(index)) <> "String" Then
+                        hasError = True
+                    End If
+                Next index
+            End If
+        Next key
+    End If
+Next element
+
+If hasError = True Then
+    '' Raise error if any of the dictionaries did not have expected signature:
+    Err.Raise 13, "CheckRangesAndFillValues", "Each element of ParamArray must be either a dictionary with { ""Moniker"" -> (""NamedRange"", ""Value"") } or array with ( ""SheetName"", { ""Moniker"" -> (""NamedRange"", ""Value"") } )."
+End If
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Fill each named range in passed dictionary:
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Dim sheetName As String
+Dim tempWS As Worksheet
+Dim usingTargetSheet As Boolean
+Dim missingSheets As String
+Dim missingRanges As String
+errorMessage = ""
+
+For Each element In elements
+    hasError = False
+    usingTargetSheet = False
+    ''''''''''''''''''''''''''''''''
+    '' Set sheet to search on if provided:
+    ''''''''''''''''''''''''''''''''
+    If TypeName(element) = "Variant()" Then
+        '' Search provided sheet for
+        sheetName = Trim(element(0))
+        Set dictObj = element(1)
+        Set tempWS = ThisWorkbook.Worksheets(sheetName)
+        If Err.Description <> vbNullString Then
+            missingSheets = missingSheets & IIf(missingSheets = "", "The following sheets are missing: " & vbCr, ", ")
+            missingSheets = missingSheets & sheetName
+            hasError = True
+            Err.Clear
+        Else
+            '' Recalculate cells on worksheet:
+            tempWS.Calculate
+            usingTargetSheet = True
+        End If
+    Else
+        Set dictObj = element
+    End If
+    ''''''''''''''''''''''''''''''''
+    '' Check that each named range exists in the provided dictionary:
+    ''''''''''''''''''''''''''''''''
+    If hasError = False Then
+        For Each key In dictObj.Keys()
+            tempArr = dictObj(key)
+            '' Search on sheet if provided:
+            tempArr(1) = Trim(IIf(usingTargetSheet = True, tempWS, ThisWorkbook).Range(tempArr(0)).Value)
+            If Err.Description <> vbNullString Then
+                missingRanges = missingRanges & IIf(missingRanges = "", "The following named ranges are missing: " & vbCr, ", ")
+                missingRanges = missingRanges & CStr(tempArr(0))
+                Err.Clear
+            Else
+                dictObj(key) = tempArr
+            End If
+        Next key
+    End If
+Next element
+
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Return error message indicating which sheets and named ranges were missing:
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+errorMessage = missingSheets & IIf(missingRanges <> "", vbCr, "") & missingRanges
+
+CheckRangesAndFillValues = errorMessage
+
+End Function
+
+Function CheckFolders(ParamArray folders() As Variant) As String
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Description:
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Check that each passed folder exists. Function expects variable number of string paths as parameters.
+
+Dim folder As Variant
+Dim hasError As Boolean
+
+'' Ensure that each element of the parameter array is valid:
+For Each folder In folders
+    If TypeName(folder) <> "String" Then
+        hasError = True
+        Exit For
+    End If
+Next folder
+
+'' Raise exception if any element is invalid:
+If hasError = True Then
+    Err.Raise 13, "CheckFolders", "ParamArray must only contain string paths."
+End If
+
+''''''''''''''''''''''''''''''''''''''''''''''''''
+'' Check that each folder exists:
+''''''''''''''''''''''''''''''''''''''''''''''''''
+Dim fso As Object: Set fso = CreateObject("Scripting.FileSystemObject")
+Dim tempFolder As String
+Dim errorMessage As String
+
+For Each folder In folders
+    tempFolder = FilepathFunctions.GetEnclosingFolder(CStr(folder))
+    If fso.FolderExists(tempFolder) = False Then
+        errorMessage = errorMessage & IIf(hasError = False, "The following folders are missing: ", "") & vbCr
+        errorMessage = errorMessage & tempFolder
+        hasError = True
+    End If
+Next folder
+
+'' Return error message indicating all missing folders:
+CheckFolders = errorMessage
+
+End Function
